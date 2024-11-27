@@ -22,41 +22,19 @@ pub fn update_eula(loc: &str) {
     }
 }
 
-#[macro_export]
-macro_rules! update {
-    (path:String) => {
-        use crate::eula_updater::update_eula;
-        update_eula(path)
-    };
-    () => {
-        use crate::eula_updater::update_eula;
-        update_eula("eula.txt")
-    };
-}
-
-pub use update;
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn test_eula_update() {
-        const LOC: &str = "tests/eula.txt";
-        {
-            let mut updated_eula = String::new();
-            let mut eula = File::open(LOC).expect("Unable to find the file");
-            eula.read_to_string(&mut updated_eula).expect("Error reading file");
-            println!("Before Update: {}", updated_eula.contains("eula=false"));
-        }
-
+        const LOC: &str = "tests/eula.txt";   
         let _ = update_eula(LOC);
 
         {
             let mut updated_eula = String::new();
             let mut eula = File::open(LOC).expect("Unable to find the file");
             eula.read_to_string(&mut updated_eula).expect("Error reading file");
-            println!("After Update: {}", updated_eula.contains("eula=false"));
             assert!(updated_eula.contains("eula=true"));
         }
 
@@ -66,7 +44,6 @@ mod tests {
             let mut updated_eula = String::new();
             let mut eula = File::open(LOC).expect("Unable to find the file");
             eula.read_to_string(&mut updated_eula).expect("Error reading file");
-            println!("After Update: {}", updated_eula.contains("eula=false"));
             assert!(updated_eula.contains("eula=false"));
         }
 
