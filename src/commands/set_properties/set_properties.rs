@@ -1,46 +1,6 @@
 use std::{ fs::File, io::{ Read, Write } };
 use regex::{Captures, Regex};
 
-#[derive(clap::ValueEnum, Copy, Clone, Debug, PartialEq, Eq)]
-pub enum Difficulty {
-    Peaceful,
-    Easy,
-    Normal,
-    Hard
-}
-
-impl Difficulty {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            &Difficulty::Peaceful => "peaceful",
-            &Difficulty::Easy => "easy",
-            &Difficulty::Normal => "normal",
-            &Difficulty::Hard => "hard"
-        }
-    }
-}
-
-
-#[derive(clap::ValueEnum, Copy, Clone, Debug, PartialEq, Eq)]
-pub enum GameMode {
-    Survival,
-    Creative,
-    Adventure,
-    Spectator
-}
-
-impl GameMode {
-    pub fn as_str(&self) -> &'static str {
-        match self {
-            &GameMode::Survival => "survival",
-            &GameMode::Creative => "creative",
-            &GameMode::Adventure => "adventure",
-            &GameMode::Spectator => "spectator"
-        }
-    }
-}
-
-
 pub fn set_property(loc:&str, name:&str, value: &str) {
     let mut server_properties_txt = String::new();
     let re = Regex::new(format!(r"({}=)([\S]\w+)", name).as_str()).unwrap();
@@ -64,6 +24,7 @@ pub fn set_property(loc:&str, name:&str, value: &str) {
 
 #[cfg(test)]
 mod tests {
+    use crate::types::{difficulty::Difficulty, gamemode::GameMode};
     use super::*;
 
     #[test]

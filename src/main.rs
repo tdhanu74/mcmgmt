@@ -1,6 +1,8 @@
 mod commands;
+mod types;
 
-use commands::set_properties::set_properties::{Difficulty, GameMode};
+use types::difficulty::Difficulty;
+use types::gamemode::GameMode;
 use commands::{get_server::fetch_server, set_properties::set_properties, eula_updater::eula_updater};
 use reqwest::Error;
 use clap::{ arg, value_parser, Command };
@@ -74,6 +76,11 @@ async fn main() -> Result<(), Error> {
                 .value_parser(value_parser!(String)),
             ])
         )
+        .subcommand(
+            Command::new("run")
+            .about("Run Server")
+            .disable_version_flag(true)
+        )
         .get_matches();
 
     match matches.subcommand() {
@@ -109,6 +116,9 @@ async fn main() -> Result<(), Error> {
             if let Some(seed) = sub_matches.get_one::<String>("seed") {
                 set_properties::set_property("server.properties", "level-seed", seed.as_str());
             }
+        }
+        Some(("run", _sub_matches)) => {
+
         }
         _ => unreachable!("Exhausted list of subcommands and subcommand_required prevents `None`"),
     }
