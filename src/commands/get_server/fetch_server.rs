@@ -1,7 +1,6 @@
 use indicatif::{ProgressBar, ProgressStyle};
 use reqwest;
 use reqwest::Error;
-use std::fmt::format;
 use std::fs::File;
 use std::io::Write;
 
@@ -28,9 +27,9 @@ pub async fn get_server_jar(version: &str) -> Result<(), Error> {
     pb.set_style(ProgressStyle::default_bar()
         .template("{msg}\n{spinner:.green} [{elapsed_precise}] [{wide_bar:.cyan/blue}] {bytes}/{total_bytes} ({bytes_per_sec}, {eta})").expect("Error in template")
         .progress_chars("#>-"));
-    pb.set_message(format!("Downloading server-{}.jar file....", version));
+    pb.set_message("Downloading server.jar file....");
     
-    let mut out: File = File::create(format(format_args!("server-{}.jar", version))).expect("Failed to create file");
+    let mut out: File = File::create("server.jar").expect("Failed to create file");
     let mut downloaded: u64 = 0;
     while let Some(chunk) = server_file_download.chunk().await? {
         let _ = out.write(&chunk);
@@ -39,7 +38,7 @@ pub async fn get_server_jar(version: &str) -> Result<(), Error> {
         pb.set_position(new);
     }
 
-    pb.finish_with_message(format!("Downloaded server-{}.jar file....", version));
+    pb.finish_with_message("Downloaded server.jar file....");
 
     Ok(())
 }
@@ -53,7 +52,7 @@ mod tests {
     #[tokio::test]
     async fn test_fetch_server() {
         let version = "1.21.3";
-        let file_name = format(format_args!("server-{}.jar", version));
+        let file_name = "server.jar";
         let _ = get_server_jar(version).await;
         let file_exists = File::open(&file_name);
         assert!(file_exists.is_ok());

@@ -1,15 +1,14 @@
 mod commands;
 mod types;
 
-use types::difficulty::Difficulty;
+use types::{capacity::Capacity, difficulty::Difficulty};
 use types::gamemode::GameMode;
-use commands::{get_server::fetch_server, set_properties::set_properties, eula_updater::eula_updater};
+use commands::{get_server::fetch_server, set_properties::set_properties, eula_updater::eula_updater, run_server::run_server};
 use reqwest::Error;
 use clap::{ arg, value_parser, Command };
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
-    // std::env::set_var("RUST_BACKTRACE", "1");
     let matches = Command::new("bin_cli")
         .version("1.0")
         .bin_name("mcmgmt")
@@ -22,8 +21,10 @@ async fn main() -> Result<(), Error> {
             .about("Fetch server jar from site")
             .disable_version_flag(true)
             .arg(
-                arg!(-v --version "version")
+                arg!(-v --version <VERSION> "version")
                 .required(true)
+                .num_args(0..=1)
+                .value_parser(value_parser!(String))
             )
         )
         .subcommand(
@@ -36,42 +37,42 @@ async fn main() -> Result<(), Error> {
             .about("Set Server Properties")
             .disable_version_flag(true)
             .args([
-                arg!(-n --name "Set server name")
+                arg!(-n --name <NAME> "Set server name")
                 .required(false)
                 .value_parser(value_parser!(String)),
             ])
             .args([
-                arg!(-d --difficulty "Set difficulty")
+                arg!(-d --difficulty <DIFFICULTY> "Set difficulty")
                 .required(false)
                 .value_parser(value_parser!(Difficulty)),
             ])
             .args([
-                arg!(-g --gamemode "Set Game Mode")
+                arg!(-g --gamemode <GAMEMODE> "Set Game Mode")
                 .required(false)
                 .value_parser(value_parser!(GameMode)),
             ])
             .args([
-                arg!(-vd --view-distance "Set View Distance")
+                arg!(-v --"view-distance" <VIEW_DISTANCE> "Set View Distance")
                 .required(false)
-                .value_parser(value_parser!(u8).range(2..32)),
+                .value_parser(value_parser!(u8).range(2..=32)),
             ])
             .args([
-                arg!(-sd --simulation-distance "Set Simulation Distance")
+                arg!(-s --"simulation-distance" <SIMULATION_DISTANCE> "Set Simulation Distance")
                 .required(false)
-                .value_parser(value_parser!(u8).range(2..32)),
+                .value_parser(value_parser!(u8).range(2..=32)),
             ])
             .args([
-                arg!(-hc --hardcore "Set Hardcore Mode")
-                .required(false)
-                .value_parser(value_parser!(bool)),
-            ])
-            .args([
-                arg!(-om --online-mode "Set Online Mode")
+                arg!(-c --hardcore <BOOL> "Set Hardcore Mode")
                 .required(false)
                 .value_parser(value_parser!(bool)),
             ])
             .args([
-                arg!(-s --seed "Set World Seed")
+                arg!(-o --"online-mode" <BOOL> "Set Online Mode")
+                .required(false)
+                .value_parser(value_parser!(bool)),
+            ])
+            .args([
+                arg!(--seed <SEED> "Set World Seed")
                 .required(false)
                 .value_parser(value_parser!(String)),
             ])
@@ -80,6 +81,12 @@ async fn main() -> Result<(), Error> {
             Command::new("run")
             .about("Run Server")
             .disable_version_flag(true)
+            .args([
+                arg!(-c --capacity <CAPACITY> "Specify server capacity")
+                .required(false)
+                .value_parser(value_parser!(Capacity))
+                .default_value("medium"),
+            ])
         )
         .get_matches();
 
@@ -117,8 +124,9 @@ async fn main() -> Result<(), Error> {
                 set_properties::set_property("server.properties", "level-seed", seed.as_str());
             }
         }
-        Some(("run", _sub_matches)) => {
-
+        Some(("run", sub_matches)) => {
+            let capacity = sub_matches.get_one::<Capacity>("capacity").expect("Didn't get capacity");
+            run_server::exec_server(capacity.clone());
         }
         _ => unreachable!("Exhausted list of subcommands and subcommand_required prevents `None`"),
     }
