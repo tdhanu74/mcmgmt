@@ -1,11 +1,11 @@
 mod commands;
 mod types;
 
-use types::{capacity::Capacity, difficulty::Difficulty};
-use types::gamemode::GameMode;
-use commands::{get_server::fetch_server, set_properties::set_properties, eula_updater::eula_updater, run_server::run_server};
+use clap::{arg, value_parser, Command};
+use commands::{eula_updater, fetch_server, run_server, set_properties};
 use reqwest::Error;
-use clap::{ arg, value_parser, Command };
+use types::gamemode::GameMode;
+use types::{capacity::Capacity, difficulty::Difficulty};
 
 #[tokio::main]
 async fn main() -> Result<(), Error> {
@@ -92,7 +92,9 @@ async fn main() -> Result<(), Error> {
 
     match matches.subcommand() {
         Some(("get_server", sub_matches)) => {
-            let version: &str = sub_matches.get_one::<String>("version").expect("Version not specified");
+            let version: &str = sub_matches
+                .get_one::<String>("version")
+                .expect("Version not specified");
             fetch_server::get_server_jar(version).await?;
         }
         Some(("eula", _sub_matches)) => {
@@ -109,23 +111,41 @@ async fn main() -> Result<(), Error> {
                 set_properties::set_property("server.properties", "gamemode", gamemode.as_str());
             }
             if let Some(view_distance) = sub_matches.get_one::<u8>("view-distance") {
-                set_properties::set_property("server.properties", "view-distance", view_distance.to_string().as_str());
+                set_properties::set_property(
+                    "server.properties",
+                    "view-distance",
+                    view_distance.to_string().as_str(),
+                );
             }
             if let Some(simulation_distance) = sub_matches.get_one::<u8>("simulation-distance") {
-                set_properties::set_property("server.properties","simulation-distance", simulation_distance.to_string().as_str());
+                set_properties::set_property(
+                    "server.properties",
+                    "simulation-distance",
+                    simulation_distance.to_string().as_str(),
+                );
             }
             if let Some(hardcore) = sub_matches.get_one::<bool>("hardcore") {
-                set_properties::set_property("server.properties", "hardcore", hardcore.to_string().as_str());
+                set_properties::set_property(
+                    "server.properties",
+                    "hardcore",
+                    hardcore.to_string().as_str(),
+                );
             }
             if let Some(online) = sub_matches.get_one::<bool>("online-mode") {
-                set_properties::set_property("server.properties", "online-mode", online.to_string().as_str());
+                set_properties::set_property(
+                    "server.properties",
+                    "online-mode",
+                    online.to_string().as_str(),
+                );
             }
             if let Some(seed) = sub_matches.get_one::<String>("seed") {
                 set_properties::set_property("server.properties", "level-seed", seed.as_str());
             }
         }
         Some(("run", sub_matches)) => {
-            let capacity = sub_matches.get_one::<Capacity>("capacity").expect("Didn't get capacity");
+            let capacity = sub_matches
+                .get_one::<Capacity>("capacity")
+                .expect("Didn't get capacity");
             run_server::exec_server(capacity.clone());
         }
         _ => unreachable!("Exhausted list of subcommands and subcommand_required prevents `None`"),
